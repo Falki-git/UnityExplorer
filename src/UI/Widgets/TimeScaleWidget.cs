@@ -68,6 +68,85 @@ namespace UnityExplorer.UI.Widgets
             lockBtn.ButtonText.text = locked ? "Unlock" : "Lock";
         }
 
+        // Enable or disable game input
+        public void LockInput()
+        {
+            // to enable game input => KSP.Game.GameManager.Instance.Game.Input.Enable();
+            // to disable game input => KSP.Game.GameManager.Instance.Game.Input.Disable();
+            // is game input enabled => KSP.Game.GameManager.Instance.Game.Input.m_Global.enabled
+
+            // Get the currently executing assembly (your code).
+            Assembly currentAssembly = Assembly.GetExecutingAssembly();
+
+            // Find the "Assembly-CSharp" assembly among the loaded assemblies.
+            Assembly targetAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(assembly => assembly.GetName().Name == "Assembly-CSharp");
+
+            Type gameManagerType = targetAssembly.GetType("KSP.Game.GameManager");
+
+
+            if (gameManagerType != null)
+            {
+                // Get the "Instance" property from KSP.Game.GameManager
+                PropertyInfo instanceProperty = gameManagerType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+
+                if (instanceProperty != null)
+                {
+                    // Get the value of the "Instance" property (an instance of KSP.Game.GameManager).
+                    object gameManagerInstance = instanceProperty.GetValue(null, null);
+
+                    // Get the "Game" property from the GameManager instance.
+                    PropertyInfo gameProperty = gameManagerType.GetProperty("Game");
+
+                    if (gameProperty != null)
+                    {
+                        // Get the value of the "Game" property (an instance of whatever type "Game" is).
+                        object gameInstance = gameProperty.GetValue(gameManagerInstance, null);
+
+                        // Get the "Input" property.
+                        PropertyInfo inputProperty = gameInstance.GetType().GetProperty("Input");
+
+                        if (inputProperty != null)
+                        {
+                            // Get the value of the "Input" property (an instance of whatever type "Input" is).
+                            object inputInstance = inputProperty.GetValue(gameInstance, null);
+
+                            //PropertyInfo globalProperty = inputInstance.GetType().GetProperty("m_Global", BindingFlags.NonPublic | BindingFlags.Instance);
+                            FieldInfo globalField = inputInstance.GetType().GetField("m_Global", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                            if (globalField != null)
+                            {
+                                object globalInstance = globalField.GetValue(inputInstance);
+
+                                PropertyInfo enabledProperty = globalInstance.GetType().GetProperty("enabled");
+
+                                if (enabledProperty != null)
+                                {
+                                    bool enabled = (bool)enabledProperty.GetValue(globalInstance, null);
+
+                                    // Get the Enable and Disable methods
+                                    MethodInfo enableMethod = inputInstance.GetType().GetMethod("Enable");
+                                    MethodInfo disableMethod = inputInstance.GetType().GetMethod("Disable");
+                                    
+                                    /// If it's needed to lock gameinput depending on current value =>
+                                    //if (enabled)
+                                    //    disableMethod?.Invoke(inputInstance, null);
+                                    //else
+                                    //    enableMethod?.Invoke(inputInstance, null);
+                                    
+                                    if (locked)
+                                        disableMethod?.Invoke(inputInstance, null);
+                                    else
+                                        enableMethod?.Invoke(inputInstance, null);
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // UI Construction
 
         void ConstructUI(GameObject parent)
@@ -85,6 +164,7 @@ namespace UnityExplorer.UI.Widgets
             lockBtn = UIFactory.CreateButton(parent, "PauseButton", "Lock", new Color(0.2f, 0.2f, 0.2f));
             UIFactory.SetLayoutElement(lockBtn.Component.gameObject, minHeight: 25, minWidth: 50);
             lockBtn.OnClick += OnPauseButtonClicked;
+            lockBtn.OnClick += LockInput;
         }
 
         // Only allow Time.timeScale to be set if the user hasn't "locked" it or if we are setting the value internally.
