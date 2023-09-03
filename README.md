@@ -1,4 +1,19 @@
 <p align="center">
+  <b>KSP2 edition</b></br>clicking on "Lock" also disables game input so you can type without triggering game mechanics
+</p>
+<p align="center">
+  Get the <a href="https://github.com/Falki-git/UnityExplorer/releases">release</a> and unzip it to KSP2 root folder.
+</p>
+<p align="center">
+  BepInEx and SpaceWarp are required.
+</p>
+<p align="center">
+  Original readme follows:
+</p>
+
+___
+
+<p align="center">
   <img align="center" src="img/icon.png">
 </p>
 
