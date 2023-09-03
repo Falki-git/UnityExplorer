@@ -18,8 +18,8 @@ namespace UnityExplorer
 {
     public static class ExplorerCore
     {
-        public const string NAME = "UnityExplorer";
-        public const string VERSION = "4.9.0";
+        public const string NAME = "UnityExplorer for KSP 2";
+        public const string VERSION = "4.9.1";
         public const string AUTHOR = "Sinai";
         public const string GUID = "com.sinai.unityexplorer";
 
